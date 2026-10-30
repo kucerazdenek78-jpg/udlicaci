@@ -45,7 +45,7 @@ dt{color:var(--muted)} dd{margin:0;text-align:right;font-family:var(--mono);font
 </head>
 <body>
 <div class="wrap">
-  <header><div><h1>Voda Údlice</h1><div class="sub">Vyúčtování vody pro zahrádkáře · parc. 1116/1-50</div><div class="sub">Správce: Rostislav Černý, tel. <a href="tel:+420775424865">775 424 865</a></div></div><div style="display:flex;gap:8px;flex-wrap:wrap"><a class="btn small" href="/navod/">Jak na to?</a><button class="btn ghost small" id="pwa-btn" type="button" hidden>Přidat na plochu</button></div></header>
+  <header><div><h1>Voda Údlice</h1><div class="sub">Vyúčtování vody pro zahrádkáře · parc. 1116/1-50</div><div class="sub">Správce: Rostislav Černý, tel. <a href="tel:+420775424865">775 424 865</a></div></div><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn small" type="button" id="tour-btn">Průvodce</button><button class="btn ghost small" id="pwa-btn" type="button" hidden>Přidat na plochu</button></div></header>
   <div id="pwa-help" class="msg" hidden></div>
 
   <form class="panel" id="f-kod">
@@ -68,6 +68,7 @@ dt{color:var(--muted)} dd{margin:0;text-align:right;font-family:var(--mono);font
       <form id="f-odecet" class="row">
         <label>Datum<input type="date" id="datum"></label>
         <label>Stav vodoměru (m³)<input class="num" id="stav" inputmode="decimal" placeholder="0,00" autocomplete="off"></label>
+        <details style="flex:1 1 100%;font-size:.95rem"><summary style="cursor:pointer;color:var(--accent);font-weight:600">Jak přečíst vodoměr?</summary><div id="vodomer-help" style="max-width:340px;margin-top:6px"></div><p class="note">Opište černá čísla (celé m³), dejte čárku a připište první dvě červená. Nuly na začátku vynechte.</p></details>
         <button class="btn" type="submit">Spočítat</button>
       </form>
       <div id="o-msg" class="msg err" hidden></div>
@@ -77,8 +78,47 @@ dt{color:var(--muted)} dd{margin:0;text-align:right;font-family:var(--mono);font
   <footer class="sub" style="text-align:center;padding-top:8px;border-top:1px solid var(--line)">Program připravil Zdeněk Kučera, který správci s vyúčtováním pomáhá. Návrhy na zlepšení nebo výhrady posílejte na <a href="mailto:kucerazd@outlook.cz">kucerazd@outlook.cz</a>.</footer>
 </div>
 <script>
+/* --- průvodce přímo na stránce (zvýraznění + bublina) --- */
+const TOUR={kroky:[],i:0,kl:null,konec:null};
+(function(){const st=document.createElement("style");st.textContent=`
+#tour-spot{position:fixed;z-index:9998;border-radius:10px;box-shadow:0 0 0 9999px rgba(10,20,25,.62);outline:3px solid #f2b705;transition:all .25s ease;pointer-events:none}
+#tour-bub{position:fixed;z-index:9999;max-width:min(360px,calc(100vw - 24px));background:#fff;color:#14232a;border-radius:14px;padding:14px 16px;box-shadow:0 10px 30px rgba(0,0,0,.3);font:17px/1.45 Inter,system-ui,sans-serif}
+#tour-bub .tk{font-size:13px;color:#5b6d73;margin-bottom:4px}
+#tour-bub .tt{font-weight:700;font-size:18px;margin-bottom:6px}
+#tour-bub .tx b{color:#0b263c}
+#tour-bub .tb{display:flex;gap:8px;justify-content:space-between;align-items:center;margin-top:12px}
+#tour-bub button{font:inherit;font-size:16px;font-weight:700;border-radius:10px;padding:9px 16px;cursor:pointer;border:2px solid #0f6a7a;background:#fff;color:#0f6a7a}
+#tour-bub button.pr{background:#0f6a7a;color:#fff}
+#tour-bub button.x{border:0;padding:6px 4px;color:#5b6d73;font-weight:500;font-size:14px;text-decoration:underline}
+#tour-bub svg{max-width:100%;height:auto;margin-top:8px}
+@media (prefers-reduced-motion:reduce){#tour-spot{transition:none}}`;document.head.appendChild(st)})();
+function tourStart(kroky,konec){kroky=kroky.filter(k=>!k.sel||document.querySelector(k.sel)&&document.querySelector(k.sel).offsetParent!==null);if(!kroky.length)return;
+  TOUR.kroky=kroky;TOUR.i=0;TOUR.konec=konec||null;tourStop(true);
+  const sp=document.createElement("div");sp.id="tour-spot";const bb=document.createElement("div");bb.id="tour-bub";bb.setAttribute("role","dialog");document.body.append(sp,bb);
+  TOUR.kl=e=>{if(e.key==="Escape")tourStop();if(e.key==="ArrowRight")tourDal();if(e.key==="ArrowLeft")tourZpet()};addEventListener("keydown",TOUR.kl);
+  addEventListener("resize",tourPoloz);addEventListener("scroll",tourPoloz,true);tourKresli()}
+function tourStop(tise){document.getElementById("tour-spot")?.remove();document.getElementById("tour-bub")?.remove();if(TOUR.kl)removeEventListener("keydown",TOUR.kl);removeEventListener("resize",tourPoloz);removeEventListener("scroll",tourPoloz,true);TOUR.kl=null;if(!tise&&TOUR.konec){const f=TOUR.konec;TOUR.konec=null;f()}}
+function tourDal(){if(TOUR.i<TOUR.kroky.length-1){TOUR.i++;tourKresli()}else tourStop()}
+function tourZpet(){if(TOUR.i>0){TOUR.i--;tourKresli()}}
+function tourKresli(){const k=TOUR.kroky[TOUR.i],n=TOUR.kroky.length,bb=document.getElementById("tour-bub");if(!bb)return;
+  bb.innerHTML=`<div class="tk">Průvodce · krok ${TOUR.i+1} z ${n}</div>${k.titul?`<div class="tt">${k.titul}</div>`:""}<div class="tx">${k.text}</div>${k.obr||""}
+  <div class="tb"><button class="x" type="button" data-t="x">Zavřít průvodce</button><span style="display:flex;gap:8px">${TOUR.i>0?'<button type="button" data-t="z">‹ Zpět</button>':""}<button class="pr" type="button" data-t="d">${TOUR.i===n-1?"Rozumím ✓":"Další ›"}</button></span></div>`;
+  bb.querySelector('[data-t="x"]').onclick=()=>tourStop();bb.querySelector('[data-t="d"]').onclick=tourDal;const z=bb.querySelector('[data-t="z"]');if(z)z.onclick=tourZpet;
+  const el=k.sel&&document.querySelector(k.sel);if(el)el.scrollIntoView({block:"center",behavior:"smooth"});setTimeout(tourPoloz,el?350:0);tourPoloz();bb.querySelector('[data-t="d"]').focus({preventScroll:true})}
+function tourPoloz(){const k=TOUR.kroky[TOUR.i],sp=document.getElementById("tour-spot"),bb=document.getElementById("tour-bub");if(!sp||!bb)return;
+  const el=k.sel&&document.querySelector(k.sel),vw=innerWidth,vh=innerHeight,m=12;
+  if(!el){sp.style.cssText="left:50%;top:40%;width:0;height:0";bb.style.left=Math.max(m,(vw-bb.offsetWidth)/2)+"px";bb.style.top=Math.max(m,(vh-bb.offsetHeight)/2)+"px";return}
+  const r=el.getBoundingClientRect(),p=6;sp.style.left=(r.left-p)+"px";sp.style.top=(r.top-p)+"px";sp.style.width=(r.width+2*p)+"px";sp.style.height=(r.height+2*p)+"px";
+  const bw=bb.offsetWidth,bh=bb.offsetHeight;let top=r.bottom+p+10;if(top+bh>vh-m)top=r.top-p-10-bh;if(top<m)top=Math.min(vh-bh-m,r.bottom+p+10);
+  let left=r.left+r.width/2-bw/2;left=Math.max(m,Math.min(left,vw-bw-m));bb.style.left=left+"px";bb.style.top=Math.max(m,top)+"px"}
+function tourJednou(klic,kroky,konec){let v=null;try{v=localStorage.getItem("tour-"+klic)}catch{}if(v)return false;try{localStorage.setItem("tour-"+klic,"1")}catch{}tourStart(kroky,konec);return true}
+const TOUR_VODOMER=`<svg viewBox="0 0 300 150" role="img" aria-label="Vodoměr: černá čísla 00044, červená 503, zapíšete 44,50"><rect x="2" y="2" width="296" height="146" rx="18" fill="#2f6f8f"/><rect x="12" y="12" width="276" height="126" rx="12" fill="#f7f7f2"/>
+<g font-family="ui-monospace,Menlo,monospace" font-size="24" font-weight="700">${[0,0,0,4,4].map((d,i)=>`<rect x="${28+i*28}" y="26" width="25" height="36" rx="3" fill="#111"/><text x="${40.5+i*28}" y="52" text-anchor="middle" fill="#fff">${d}</text>`).join("")}${[5,0,3].map((d,i)=>`<rect x="${176+i*28}" y="26" width="25" height="36" rx="3" fill="${i<2?"#c0392b":"#e9b6ae"}"/><text x="${188.5+i*28}" y="52" text-anchor="middle" fill="#fff">${d}</text>`).join("")}</g>
+<text x="96" y="82" text-anchor="middle" font-size="12" fill="#14232a" font-family="sans-serif">černá = celé m³</text><text x="216" y="82" text-anchor="middle" font-size="12" fill="#14232a" font-family="sans-serif">2 červená</text>
+<text x="150" y="118" text-anchor="middle" font-size="20" font-weight="700" fill="#0f6a7a" font-family="sans-serif">Zapíšete: 44,50</text></svg>`;
+
 const V={"iter": 150000};
-const Z=[["2EBdyymbgBG82A77drQP2w==", "3tyO0syrEm7PEMMT", "SJ2N3X1LWy8jYvh+gmaB0/eyC4uGQJzYEGKJbwWt1/hbXuSzNutI3UtlFidJuPfXCQta6iTzNUYZ8xIF96Y+UQM2b3WA4YFJxxWA4lRqojb8xK1bQStKVwsjMdOFPK/HKFWYuliQrN8Iq1d6VbBc0mhK0L2m3wSLRjbmuTYfGlXMA6uK79p8+x6JAPQegbCohFsUVStu/xTyudBt6UvkiNHVHSjK924O8Bu2e4mATfX9Ynq7EsRLeVi7Q2jhMYuBgzYcO3kMeNQCUYOY6ltDtjBL/deFXUtGr4qnRwCigq57naiK0Ie6NvA8y3FwdsuB7EQoit3rRcPCY2CHPo5kpJj1W/iqu10bfBw5gyX/BfPJaFMAtDCaIi+WruhSm2JawYBgqa+WtWNdyv/pzD+XtBjT07fU3MYcM145dnnzCFMbVS25IFXQzqJcR8JDq8nwnpyGJ0kGW7k+"], ["DTImX4m7C5q/eDYA3WRftg==", "EZTe3OA0MgcfimEl", "Y/2xq0p8v5RdTqnbHFh/tkIcS/GoSpWYQSu8NNL9EGgXvRr24pavVBfOaDLhHQbxeBkgwu2+Q/5WMP7SElaqyZmCbrchRI3/cb0g9zzrq2/aBGJFfDS7vCd+5wgeuK36XGayWLKHthGM+Z3Ydjc8S6EP+IVCi5Mmha18KWfEPPNE2EE+2cvR7ufp1s+YtWAB4vvVeXgHwoVy34GabsCOXcCpEkymiStTlpJQbULsPqFeZKkmbuMqfJH6MW3uAJt8w9S/wbBC2SIsIcg0Zh7CQDlmPD3nmfcxOhgscje2POPiiOAOA2iH6WhIWCJ3dYhdRkAHzdcyrOF9t+g/4tXi1blmODmYRTp5nXZurF3zYrTHsGIpF7qHX6B+9s/DBFiVrh0Es8uq4o2yOdP4+Ob1AJG9EGJSXbvieRhbCSiOQlhfMKW+U3NBQeAOZznSPVHjD3aUi34eRJlI4gRm"], ["303eXpwsZc80gWVydPRbUA==", "Vb1HBLYD6MaGd/xt", "F1PWeJQBdS7NUmMO8cS/RkaJ8qpJP3a8was8oinNmuAR8WDFl4oiP+K9xRie7XgPF/J7HWs4xvL0lyth3Vx2KXPPFeZ0MwV+QssOep+xjo66pSSDcmAI5/Ey89aGuq8kd0Japxfj6jGbOax03NkxnhCbr/uwuLHjoVjxd3KTzwhozYjYnqA132GKavWcHT/1RAk1YNB9yftLb9/xmx/GVfWaKYhCbHFByl5btwsGr7n9c7B+TH2AqcVOmtpq7RhlfWuRkGI4HMpWqx+fEq25QnoZ1Dx6C1UKdI3fDRfNStjcY1GBwVAiTynQVPfypZpnSZSqm2wWeX3z7GozoOXokeBwgh3EdC9Htag260Vx4NFtRGgrBGXb9gMDSJEXrP4eRvvAWYPwKDbOnhtvV2k/A1QJtRhYJ/RMIfyD+ffcI6Wrl5f2fbH3f8QdgmAIqTKHeUT5m5dqcmGWQQFE"], ["LKTqkRMZqrGigWh6Bh0zPA==", "rw5OKoPg/k5o8Xqn", "90YB7NLdndSbOsIGXvV2vDlp9HB/bgy6LmavC5bPd06+jF9ixerKTe+4B9b8DyC0b2pTcnx2sC+W+PTZ/kA4PUjwJPVi3rYdFsFe6lHXeFnhvgmnDFV7ZWErZzU4BcAwWhJvLkSclwE0UaTQ2spRidKbMjH0xRvBZBzcUHEep3Hkpz0xotCjNA9vanq+tDub4ve0tWRVQUz/7vbTcjJCTWEdMFR2qeqHcLITOxioD66q5UkGHDX/a/MFkPpYxYf0rXT37830//eCiXhfSGtINn9HQgmyUhCniOzmI92Ly5S45Woc+jKawlB0It66oBeI+DHjykgZyuhSdVaMEJVyDUYw9W90j3vGJRMT6SyRqcJBH4TuDGdVpmrbnyovpxjoBLg9slXGXrV9lf230ZEc2j5+LzpYtxXRb7beUiTjR7k/ct/ceJ4TWPdTnE5CyrE5oeESKaRU9W+dM2U="], ["fVtfAYBydpwb62zbciubiw==", "RNWMAJ27zu0hf4pI", "mRuZwVYPfWwFl08Qi2Z9j3YzZugOJtLKY+g0lNmrbqzoX7qARaZOPV75EbX93m0qUG4CQPtfChGeZAJoMPaFwBY5FKzchfpNXKNpz5uyTUN2gcXU5YQZuEsST49q6jUCMhQAq2qK5OJ7Z2zTqBtqrEoVlJQItDLWwOX+NJr09CMkSXXB09S9IxLR3lFrrXK5DUxRq9BwxRGVnGLVyJm4PsoJO4UppzivEi686wJcHNAj6gPck6cX/+ZrmJHs4uoqyN/zfyWfnJ83T0UZcnu/TJ3YR/uHSvpjajCv3oo3sZ39r4IorOlvx9Oo25Ye/7RWYoDX5IbId/+7QHVahJx7kHw6hjEFgRcztmOUYIhMx3qhPlt/gFEGZjBda0/hAByDxy+HVE0akXaio8JFR8cMmBxzpfOgv2NfK7Vt95EoZSuv+wiBBwpjLSJaH2sRDwSfW5jIBBwkZXsBefn7OTJcHA=="], ["iI6ArMKxJXRhrElAXwEqNQ==", "uyzJccM6hdkECKHO", "modqDuKcts7R399xxuNXLd3p2lIoFbLHvnLVbUkbVQiJ1iOMXDPA8Yx7SRgPbvxWvHZyxUlNbfezfciycH2r1QG5klwEXVvEYDankvtv9uv5fFBa1aJJaT8VMy0d88SFQUL+0kiv8bNInA9Hz1C3zJhJzMrx5WNUiLkiYnO7HhNegq2ARbPdW5fJCNifjCyrdr9KpO1j1ApgpyC35/onRWU4RPIfJuY8ux6HwhXAIUHCUimCYt8mXcDjq0l/xLzhbXrBYGYgDgfNkiBY4IDzERhGLuWC9IHDVpt1Nwlvnujf9ZmScR8qr0yvn8BXlAqubjxJAXi2toehJBz+iQBkqJEUzyFjdZ1KkZjutFhlcZ6AUsTEfeDj/LGwWzlXAx6B+Dl7anUwYgKRBHtANrZ8XQustBFSar0Fy8lS10CdhOz0G4I1yXUf6A+X3XD3sG/W5CuKLUrljx8wd5kLQZEoyQ=="], ["O0w+vIG/cBObn5sq114UVw==", "9gcf1+DuX2qDh/sh", "YGsWQoH9hElEsVtCQF1/0NqZARYL4NwFBNujBINhMiZpiJUFKUo6Ug/URdrK56Yy9gpl2c91L52ldthXHZG1LYOy5npjhTfc9zICHxWI6XjZaNGUS2/ri5wqA/KQTvK6QbQlQPkLkgO2zK2zIB+Ek2rY4GpTdMVBdY4KRkAGBvCUDLs1ipKBNXd7rMne/i50/eUf7y772N7Ahut8McdMEqgXCeSW0RijETS5Kz4KsrQch3DDDwmAWx1QvBXVqFU2c7HF85x8MAFGTKK0MWGNR87fz5P1J0D2Tv1ae7/wy+3zxB/lsaeh+HmHSNvZUd30fXSGnFfDXRBFCdzcPVdOSEIVfpP9GAr0M6nVG/AuWvtpr1mfD5zuzB5IN9fd6YUDaIHUIBytSuXTQ6AKR2DDtcoZWGoVqnO7oyPEM9cRnitjGbNZdknCOa65LSjxNrCkGtvWLK3YqmLsEOZA"]];
+const Z=[["+8ImiQTKRiFmNma9EFlKGw==", "49f6lZppdvjS9d/3", "quglCsArPox8xtjWd+KvNIe3hj3QFyAiimvNSW1DapHM5/H0/HbWDUtfct1ojqvrgE8MW5mgWZjpwpxN5qxTDfTdzTcZ6jxtpMrD2eO0l1fuwFNf5oUQL/BqjSvG3TA8tAqntQgoQCoD5jMTAsOgMa16YVMxaqvReTMQIbOY9hFEYVf4yYQHWvYksqBkm9YG8cFJnF6hPWY05rjSmwsAkOhcx9ryTnM341w5GofSHhoUbP9wL7/YyqLlZlan+vXXu0eZWQGPhUt7CSm7Dj11j5RDatDOy+mDbuXzJiILNi55roOg4eyigf/uSmzHKfFIMMn9vgIYzTBsDwOb0Q2+ZeeuZlM2zGG7gQnwSY14dyHWNucKLS1PyrzJ+kTjujXrltLaL79/cN1mZwwe816qd8KxhfNNkYSpAHSwc1l5OVYR4Jt9L8roPM/jUmz/ZS+tRcGjyPlFELpODcm7"], ["JtE59kEIdqwC9s3vxV1QNw==", "kPXjhNzIDsJxshib", "basez6yV/2IgxFsTAnjXJahQV2Xj5gq4POORZvQZZ4A34fSnqtjcZ/jLScjl8zDp42Z8oe+jtRZK4NFRfIC83b+QJd04O1SD5iLw8ACB4y+WIANCYdGTkmViGCYhYQyOdC08jeAdZukzmnM75uxWPo9aSntEMWi2rABPnfZJpplZV++Z6/bCRUSh+7WyHlKIqw+AF7BkvyeMda56OD+UE2lGTk4Ycsav7xiIzno6zpX5gAbNvxEAOp7jGQPD5+8MqdXy0XYC5QFZ7zAs1FfEB/4OfX2wKYRXM4zrZ0cb6aDDe812eZUyXqfKhA+6EwuuRVoTwU2wxvdqRtZ29OwgF9gtOmkYg4y10txx9TxdS0DWTsNQjYPIaeapVhOqIpC7RpqJHFtlHqDWA7esuZ9mYM6EFgxRUZGH6TjLliFMra2Z6dKcGqMcGMB6YqvLJ7QLQish+GFG+1UQxog="], ["99HFrwj/TVX6P3/Sj9ZPTg==", "ab3eFYExpc1FcM7E", "aueraQ2FktfXflO2cXXl52wMVyQKqH0Sw1JGHz9/uz2EAvkagNb1emJ0kRTg7MVJ9HpdGWZxV6/4aBXob1nyrWWLcOJjAr8hT9vagAiLtdoJLFCcb+9mA51qslegJq+pfJk+KkfctUSjCxvu6CX0Wg/EvShBRPlQIvOWGu2X/RFRbAQi7rToaOXmD5x3UgRU73MUZYZiDr03BvcPGZS8Y8gOgc0oymL9IMJsEOR4vZ1AX21huUSgIPi5+PQ6q9mRKHi51yQLSNrgE8gJxe3ddrk2s/Zi1p6OYgRAieAvAViP+Upv/qta8b0+jPUwKatVI61D0xCnGA/qhfIvRVWiiZbauyaA0R0pFmtjtbU+4AoIDqnm+hNsN0S+eWlg2fqPPnA1Uew7OQCO172klmt7uC29GBMLFO+CUDRmv5Tf4WNp5+iYzfag8GLCwzznlazuwHHU2w5x5R3dddBdCpmQYA=="], ["CFVaGtfccOpcMN7Qm/f2hg==", "jjtcSBHKfVZY8egB", "cxmJ0VDCE9ZspjZieJO/bSvQm4wQCq4lS53Y7peLy3UM7IK8CwBuziQfQqnTLkgrNcCIqt/kKiKlZ0fuGXPwA4DgTd7kgHgTPotSY8Hk/w6XyldBjOtYldgIC8burC3b/jcRGeMgNJOdI3mTmfW/8g2YJz8IUsdSWkPJ9VZ8yTubCmz2qH6ZiQJg+Bz53Th9u2P+PZPf6hrRPi7PSBqOYn0R/Dv1xIuiR8sqH+ldXLtt2GvilhcqrwFpCr6Z1Pq6PYJ/Gixsz4c8nFCMtLKZMHKBJlWGprprK42UQyOB8xH/ot9sFbgeoxnRXRU7QslBLT7APNa6Q56zDE/UMKENeqmVs3goVlRTn1qUShWBnqY7hG9YQ21m+Q2k9D52jAfmAmVhMoJEfigjD01e5yKJ6YtrpEF8MdYI07EdNihCSVbH9tkELE3/aAJgwE9yT6oMv+Hdu7vIoxjUbChrjnjD9w=="], ["WnjVwM1dJt4yd5KdYSuIrQ==", "HsJlDCQh+LPK2Lk0", "uMfCDX2IVSk4J+5jaxR85gSE+yGs15WY7eDpr0EPhpnbm0BsRZvM525AN+3dnaEsvsITWapAWvY6i3Z8uxov2osjTxXvuqLT7gJmg0/DT/yNcAvp6B15yEYpo5Fqvxmd6+2MZBCVhk+5ylxBm3oGAJz49sFt2l1DrglGbaLNqpwRkQZjhH/V9Eog1e9pvHoX3XoYDz0ad3iY2hwd0AqDHppVH1XFdG7mCz5Cl5OKpmThLu00YlxkbWcBAt8mZNKkOCEfw1BR83/B2Cmd2dT13S0yNbqkMMv1BlDfg00HXH1fPFmiBbbe2wpH2zo+CUdbzATYAd8SubBsPzCnIVJBgWi9IIlw0UdK1g7N934xpkFrnOkhPxP/oaZArPneQkaVT516HMyWhJk6NMqm5NNAxCZtK23TddzvnPcEhPU6SxD9FYywdoJISQyATZFC+//XZxnxEDuBSSRLgOcn"], ["kCx4xc6ZihdIKXK/RzyPnw==", "Y7pt/WfqqNtFVviS", "wwrUncFDdmN/4iNC8bzb4f/mW7ZaD4c50TQoctIDYGt92cI8VKHzb//lqU+IRn/CpItlBOJ81dpAXM/qOsRj2u6GqR1xr8n7xK1kdwx/sjPZywo5mHpIPYAW0IMcBVWX2hlUoAxyXSCXM0PdX6sgu/OKWUA1UT91cHwtrd4AXmhdG81iW4XyMo4uRpjukUlJCG+lqBFTTAsoMbijRINOQ8zBV4PTx/X8o/g/KJL4TsySywpdtfVVxwtZYlnSz3XLCRBf8q0WrLCcePajnu9E/1YIOl+UMpFCHuEpNuFhVb5dI449TOZvJInxgQl7ggGyad/mGnEh3wfS8H1d/9w0BvbdwrEvNQZuU+nPXgJpGFJ98Xkj1mgEAxjE6YIIH4IAv7iaHwKZG9TFg4ySppuX0V8W3+Fqj0d08lyjhDhjTwRWbyqrm0y/sMfEcCvhhU72rnzOiAyp7kbA"], ["QQ/h8u0FZkMRrcU5jZ+vQQ==", "kHMF8RRck7RchU6S", "j+ANulzcFS8PdP6Dd1OQ9NuVYNXtnDymssmeDGEpCJ5HUViohzZGVVayGyWvTsYHbenSnEV56rh4vxmaKeeXyyR8rzwWmtco8ITyCoRjNlYfrq8CDgT7JeLdRXhx6Kz0/Dck0NXPJe/SBV2W7GPOE0uRHrt8UgV5D92bLPfcg2yTHJ0ub3vz8TDsCFunX4OGRcv7UJ3W7ZtYc73UAmnR8reijvijtomLY0sIMaAkepRI8Wfy0Zyv40oethGBAxVeI1hiVWS5sGFJYsuTpRrBMdZPT/7jlTSzvWP8f06+oF1h2Q7WX4eBdH8WCt072flTydfkH41nOsG+bEk297gI+KMaahqecm0P8D6fQLNCufYpEYpi1CteKYfz57J8H4EGEeFXHmYa4542MxQ3Psm82NuEEY22NtMKpMwEBf8/rP2EZ75SexfC0RtLWKZGGNngXwcH6b8DEU6F6kLr"]];
 const $=id=>document.getElementById(id);
 const kc=x=>x==null||isNaN(x)?"–":x.toLocaleString("cs-CZ",{minimumFractionDigits:2,maximumFractionDigits:2});
 const r2=x=>Math.round((x+Number.EPSILON)*100)/100;
@@ -100,7 +140,7 @@ async function odemkni(kod){
   }
   return null;
 }
-function ukaz(d){
+function ukaz(d){setTimeout(()=>tourJednou("z-ja",KROKY_JA()),500);
   JA=d;$("f-kod").hidden=true;$("ja").hidden=false;$("jmeno").textContent=d.jmeno;
   const m=d.minule;
   if(m){const lines=[["počáteční stav",kc(m.a)],["konečný stav",kc(m.b)],["vytočeno m³",kc(m.m3)],[`cena za 1 m³ / ${kc(m.cena)} Kč`,kc(m.nakl)+" Kč"],[m.predpoklad?"uhrazená záloha (předpoklad, čeká se na výpis)":"uhrazená záloha",kc(m.zal)+" Kč"],[m.saldo>0?"nedoplatek":"přeplatek",kc(m.saldo)+" Kč"],["záloha na další rok",kc(m.zp)+" Kč"]];
@@ -124,8 +164,9 @@ $("f-odecet").onsubmit=e=>{e.preventDefault();const m=$("o-msg");m.hidden=true;c
   const txt=`Kontrolní odečet vody Údlice\n${JA.jmeno}\n\n`+lines.map(l=>l.join(": ")).join("\n")+`\n\n${tot.join(": ")}\n\nJde jen o orientační výpočet, řádné vyúčtování dělají správci.`;
   $("vysledek").innerHTML=`<dl>${lines.map(([a,b])=>`<dt>${esc(a)}</dt><dd>${esc(b)}</dd>`).join("")}<dt class="tot">${tot[0]}</dt><dd class="tot ${zbyva<0?"pos":"neg"}">${tot[1]}</dd></dl><div class="msg">Toto není řádné vyúčtování, jen orientační výpočet.</div><div class="row" style="gap:8px"><a class="btn small" target="_blank" rel="noopener" href="https://wa.me/420775424865?text=${encodeURIComponent(txt)}">Poslat odečet správci přes WhatsApp</a><button class="btn ghost small" type="button" id="kop">Kopírovat text</button></div>`;
   $("kop").onclick=async()=>{try{await navigator.clipboard.writeText(txt);$("kop").textContent="Zkopírováno"}catch{$("kop").textContent="Kopírování nejde"}};
+  setTimeout(()=>tourJednou("z-poslat",[{sel:"#vysledek a.btn",titul:"Pošlete odečet správci",text:"Výpočet je hotový. Klepněte na <b>zelené tlačítko</b>, otevře se WhatsApp se zprávou pro správce. Stačí ji odeslat šipkou."}]),400);
 };
-(async()=>{const h=location.hash||"";let k=h.startsWith("#k-")?h.slice(3):null;if(!k){try{k=localStorage.getItem("vu-kod")}catch{}}if(k){$("kod").value=k;$("f-kod").requestSubmit()}})();
+(async()=>{const h=location.hash||"";let k=h.startsWith("#k-")?h.slice(3):null;if(!k){try{k=localStorage.getItem("vu-kod")}catch{}}if(k){$("kod").value=k;$("f-kod").requestSubmit()}else setTimeout(()=>tourJednou("z-kod",KROKY_KOD()),600)})();
 /* --- instalace jako aplikace --- */
 let BIP=window.__bip||null;
 const STANDALONE=matchMedia("(display-mode: standalone)").matches||navigator.standalone===true;
@@ -143,6 +184,21 @@ if($("pwa-btn"))$("pwa-btn").onclick=async()=>{
   const h=$("pwa-help");h.hidden=false;h.textContent=t};
 if("serviceWorker" in navigator)navigator.serviceWorker.register("/sw.js").catch(()=>{});
 
+
+$("vodomer-help").innerHTML=TOUR_VODOMER;
+function KROKY_KOD(){return[
+ {titul:"Vítejte",text:"Tady uvidíte <b>své vyúčtování vody</b> a můžete si spočítat, kolik vám zbývá ze zálohy. Průvodce vám ukáže, kam co napsat."},
+ {sel:"#kod",titul:"Osobní kód",text:"Sem opište <b>osobní kód</b> ze zprávy od správce (8 znaků). Když stránku otevřete přes odkaz ze zprávy, vyplní se sám."},
+ {sel:"#pamatuj",text:"Nechte zaškrtnuté. Příště se kód už nezadává."},
+ {sel:"#b-kod",text:"Pak klepněte na <b>Zobrazit moje údaje</b>."}]}
+function KROKY_JA(){return[
+ {sel:"#jmeno",titul:"Vaše údaje",text:"Tady je <b>vaše jméno</b>. Vaše údaje vidíte jen vy."},
+ {sel:"#minule",titul:"Vaše vyúčtování",text:"Důležitý je <b>poslední řádek</b>. <b style='color:#b03a2e'>Červeně</b> = máte doplatit. <b style='color:#1d7a46'>Zeleně s mínusem</b> = máte přeplatek."},
+ {sel:"#stav",titul:"Kontrolní odečet",text:"Kdykoli si můžete spočítat, kolik vám zbývá ze zálohy. Sem napište <b>stav vodoměru</b>:",obr:TOUR_VODOMER},
+ {sel:"#f-odecet button[type=submit]",text:"Pak klepněte na <b>Spočítat</b>. Výsledek se ukáže hned pod tím."},
+ {sel:"#pwa-btn",titul:"Ikona na ploše",text:"Klepnutím na <b>Přidat na plochu</b> si uložíte ikonu Voda Údlice do telefonu a příště to otevřete jedním klepnutím."},
+ {sel:"#tour-btn",text:"Průvodce můžete kdykoli pustit znovu tímto tlačítkem. Nevíte si rady? Zavolejte správci: <b>775 424 865</b>."}]}
+$("tour-btn").onclick=()=>tourStart($("ja").hidden?KROKY_KOD():KROKY_JA());
 </script>
 </body>
 </html>
