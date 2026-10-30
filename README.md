@@ -1,7 +1,8 @@
-# Údličáci (udlicaci.dvere.app)
+# Voda Údlice (udlicaci.dvere.app)
 
-Web zahrádkářů v Údlicích (parc. 1116/1-50): společná voda a akce.
+Vyúčtování vody pro zahrádkáře v Údlicích (parc. 1116/1-50).
 
-- Úvod a `voda/` jsou zašifrované heslem webu (StatiCrypt). Ve `voda/` jsou navíc osobní záznamy, každý zašifrovaný vlastním osobním kódem: zahrádkář vidí jen sebe.
-- `voda/sprava/` je správa se všemi daty, zašifrovaná heslem správce. Data správy se ukládají v prohlížeči (záloha přes Nastavení).
+- `/` – stránka pro zahrádkáře. Osobní záznamy jsou zašifrované, každý vlastním osobním kódem: zahrádkář vidí jen sebe.
+- `/sprava/` – správa se všemi daty a odesíláním zpráv přes WhatsApp, zašifrovaná heslem správce (StatiCrypt). Data správy se ukládají v prohlížeči (záloha přes Nastavení).
+- `/voda/` – jen přesměrování ze starší adresy.
 - Nešifrované zdroje a osobní kódy se do repozitáře nenahrávají.
