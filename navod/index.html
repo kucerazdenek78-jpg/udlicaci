@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#0f6a7a">
+<link rel="icon" href="/icons/voda-192.png">
+<title>Voda Údlice – průvodce</title>
+<style>
+/* Jednoduchý průvodce: jeden krok = jedna obrazovka, velké písmo, kreslený telefon s animovaným prstem. */
+:root{--bg:#f3f6f6;--card:#fff;--ink:#14232a;--muted:#4f6268;--line:#d5dfe1;--accent:#0f6a7a;--accent2:#0b263c;--wa:#1fa855;--soft:#e6eff0;--red:#c0392b;--good:#1d7a46}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--ink);font:19px/1.5 Inter,system-ui,-apple-system,"Segoe UI",sans-serif}
+.wrap{max-width:760px;margin:0 auto;padding:16px max(16px,env(safe-area-inset-right,0px)) 150px max(16px,env(safe-area-inset-left,0px))}
+header{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+h1{font-size:1.45rem;margin:0}
+.tabs{display:flex;gap:8px;margin:8px 0 14px;flex-wrap:wrap}
+.tabs button{font:inherit;font-size:1rem;font-weight:600;border:2px solid var(--accent);background:#fff;color:var(--accent);border-radius:999px;padding:8px 18px;cursor:pointer}
+.tabs button[aria-pressed="true"]{background:var(--accent);color:#fff}
+.step{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px;display:grid;gap:16px;box-shadow:0 2px 10px rgba(0,0,0,.05)}
+.num{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:50%;background:var(--accent);color:#fff;font-weight:700;font-size:1.3rem;flex:none}
+.title{display:flex;gap:12px;align-items:center}
+.title h2{font-size:1.35rem;margin:0;line-height:1.25}
+.text{font-size:1.15rem;margin:0}
+.text b{color:var(--accent2)}
+.tip{background:#fff8e6;border:1px solid #f0d58a;border-radius:10px;padding:10px 14px;font-size:1rem}
+.scene{display:flex;justify-content:center;padding:6px 0}
+/* telefon */
+.phone{position:relative;width:300px;height:400px;border-radius:34px;background:#1b1f22;padding:12px;box-shadow:0 8px 24px rgba(0,0,0,.18)}
+.screen{position:relative;width:100%;height:100%;border-radius:24px;background:#f3f6f6;overflow:hidden;font-size:12.5px;line-height:1.35}
+.bar{background:var(--accent);color:#fff;padding:10px 12px;font-weight:700;font-size:14px}
+.bar small{display:block;font-weight:400;opacity:.85;font-size:11px}
+.pad{padding:10px;display:grid;gap:8px}
+.card{background:#fff;border:1px solid var(--line);border-radius:10px;padding:8px 10px}
+.row{display:flex;justify-content:space-between;gap:6px}
+.row span:last-child{font-family:ui-monospace,Menlo,monospace;white-space:nowrap}
+.btnm{background:var(--accent);color:#fff;border-radius:8px;padding:8px;text-align:center;font-weight:700}
+.btnm.wa{background:var(--wa)}
+.btnm.ghost{background:#fff;color:var(--accent);border:1.5px solid var(--accent)}
+.inp{background:#eef3f3;border:1.5px solid var(--line);border-radius:8px;padding:8px;font-family:ui-monospace,Menlo,monospace;text-align:right;min-height:34px}
+.hl{outline:3px solid #f2b705;outline-offset:2px;border-radius:8px;animation:pulse 1.6s infinite}
+@keyframes pulse{0%,100%{outline-color:#f2b705}50%{outline-color:rgba(242,183,5,.25)}}
+.tot{font-weight:800}
+.tot.red span:last-child{color:var(--red)} .tot.green span:last-child{color:var(--good)}
+/* WhatsApp */
+.wabg{background:#ece5dd;height:100%}
+.wabar{background:#075e54;color:#fff;padding:10px 12px;font-weight:700;font-size:14px}
+.bubble{background:#fff;border-radius:10px;padding:8px 10px;margin:10px;max-width:85%;box-shadow:0 1px 1px rgba(0,0,0,.1);font-size:12.5px}
+.bubble a{color:#0b6fd6;text-decoration:underline;word-break:break-all}
+/* prst */
+.finger{position:absolute;width:46px;height:46px;pointer-events:none;z-index:5;animation:tap 2.2s infinite}
+.finger::before{content:"";position:absolute;left:4px;top:4px;width:38px;height:38px;border-radius:50%;background:rgba(242,183,5,.45);animation:ripple 2.2s infinite}
+.finger svg{position:absolute;left:10px;top:12px;width:34px;height:44px}
+@keyframes tap{0%,100%{transform:translate(18px,22px)}40%,60%{transform:translate(0,0)}}
+@keyframes ripple{0%,35%{transform:scale(.2);opacity:0}50%{transform:scale(1);opacity:1}75%,100%{transform:scale(1.4);opacity:0}}
+.typing::after{content:"|";animation:blink 1s steps(1) infinite;color:var(--accent)}
+@keyframes blink{50%{opacity:0}}
+.type{display:inline-block;overflow:hidden;white-space:nowrap;vertical-align:bottom;animation:type 3s steps(5) infinite}
+@keyframes type{0%{width:0}60%,100%{width:6ch}}
+/* vodoměr */
+.meter{width:300px;max-width:100%}
+/* ovládání */
+.nav{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--line);padding:10px max(16px,env(safe-area-inset-right,0px)) calc(10px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+.nav .in{max-width:760px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.nav button{font:inherit;font-weight:700;font-size:1.1rem;border-radius:12px;padding:12px 22px;cursor:pointer;border:2px solid var(--accent)}
+#zpet{background:#fff;color:var(--accent)} #dal{background:var(--accent);color:#fff}
+#zpet:disabled{opacity:.35;cursor:default}
+.dots{display:flex;gap:6px;flex-wrap:wrap;justify-content:center}
+.dots i{width:10px;height:10px;border-radius:50%;background:var(--line)} .dots i.on{background:var(--accent)}
+.help{text-align:center;color:var(--muted);font-size:1rem;margin-top:14px}
+.help a{color:var(--accent);font-weight:700}
+@media (prefers-reduced-motion:reduce){.finger,.finger::before,.hl,.type{animation:none}}
+@media (max-width:420px){body{font-size:18px}.phone{width:290px;height:390px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header><h1>Voda Údlice – průvodce</h1><a href="/" style="color:var(--accent);font-weight:600">← Zpět na vyúčtování</a></header>
+  <div class="tabs"><button type="button" id="b-z" aria-pressed="true">Pro zahrádkáře</button><button type="button" id="b-s" aria-pressed="false">Pro správce</button></div>
+  <div id="krok"></div>
+  <p class="help">Nevíte si rady? Zavolejte správci: <b>Rostislav Černý</b>, <a href="tel:+420775424865">775 424 865</a></p>
+</div>
+<div class="nav"><div class="in"><button type="button" id="zpet">‹ Zpět</button><div class="dots" id="dots"></div><button type="button" id="dal">Další ›</button></div></div>
+
+<script>
+const PRST='<div class="finger" style="__POS__"><svg viewBox="0 0 34 44"><path d="M12 2c2.2 0 4 1.8 4 4v14l2-1c2.4-.9 5 .5 5.6 3l.4 1.6 3-.5c2.5-.3 4.7 1.6 4.7 4.1V36c0 4.4-3.6 8-8 8h-6c-3 0-5.7-1.7-7.1-4.3L3 31c-1.1-2 0-4.5 2.2-5.1 1.3-.3 2.6.1 3.5 1l1.3 1.3V6c0-2.2 1.8-4 4-4z" fill="#fff" stroke="#14232a" stroke-width="2"/></svg></div>';
+const prst=(x,y)=>PRST.replace("__POS__",`left:${x}px;top:${y}px`);
+const tel=(obsah,extra="")=>`<div class="scene"><div class="phone"><div class="screen">${obsah}</div>${extra}</div></div>`;
+const hlava='<div class="bar">Voda Údlice<small>Správce: Rostislav Černý, 775 424 865</small></div>';
+const meter=`<div class="scene"><svg class="meter" viewBox="0 0 300 230" role="img" aria-label="Vodoměr: černá čísla 00044, červená 503">
+  <rect x="4" y="4" width="292" height="222" rx="28" fill="#2f6f8f"/><rect x="18" y="18" width="264" height="194" rx="18" fill="#f7f7f2" stroke="#1e4d63" stroke-width="3"/>
+  <text x="150" y="48" text-anchor="middle" font-size="15" fill="#555" font-family="sans-serif">m³</text>
+  <g font-family="ui-monospace,Menlo,monospace" font-size="26" font-weight="700">
+   ${[0,0,0,4,4].map((d,i)=>`<rect x="${34+i*28}" y="62" width="25" height="38" rx="3" fill="#111"/><text x="${46.5+i*28}" y="90" text-anchor="middle" fill="#fff">${d}</text>`).join("")}
+   ${[5,0,3].map((d,i)=>`<rect x="${182+i*28}" y="62" width="25" height="38" rx="3" fill="${i<2?"#c0392b":"#e9b6ae"}"/><text x="${194.5+i*28}" y="90" text-anchor="middle" fill="#fff">${d}</text>`).join("")}
+  </g>
+  <rect x="30" y="57" width="146" height="48" rx="6" fill="none" stroke="#f2b705" stroke-width="4"/>
+  <rect x="178" y="57" width="60" height="48" rx="6" fill="none" stroke="#f2b705" stroke-width="4" stroke-dasharray="6 4"/>
+  <text x="103" y="126" text-anchor="middle" font-size="13" fill="#14232a" font-family="sans-serif">celé m³ (černé)</text>
+  <text x="225" y="126" text-anchor="middle" font-size="13" fill="#14232a" font-family="sans-serif">2 červená</text>
+  <text x="150" y="176" text-anchor="middle" font-size="24" font-weight="700" fill="#0f6a7a" font-family="sans-serif">Zapíšete: 44,50</text>
+ </svg></div>`;
+
+const ZAHRADKAR=[
+ {t:"Přijde vám zpráva s odkazem",x:"Správce vám pošle zprávu na <b>WhatsApp</b>. Je v ní <b>váš osobní odkaz</b>. Stačí na něj <b>klepnout prstem</b>.",
+  s:tel(`<div class="wabg"><div class="wabar">Rostislav Černý</div><div class="bubble">Ahoj, tady je tvůj osobní odkaz k vodě:<br><a class="hl">udlicaci.dvere.app/#k-…</a><br>Odkaz nikomu neposílej.</div></div>`,prst(120,120)),
+  tip:"Odkaz je jen váš. Nikomu ho prosím nepřeposílejte."},
+ {t:"Otevře se stránka s vaším jménem",x:"Uvidíte nahoře <b>své jméno</b> a pod ním <b>své vyúčtování</b>. Nic dalšího vyplňovat nemusíte.",
+  s:tel(hlava+`<div class="pad"><div style="font-weight:700;font-size:15px" class="hl">Jan Novák</div><div class="card"><b>Vaše vyúčtování: sezona 2026</b><div class="row"><span>vytočeno m³</span><span>14,00</span></div><div class="row"><span>náklady</span><span>1 208,00 Kč</span></div><div class="row"><span>uhrazená záloha</span><span>1 000,00 Kč</span></div></div></div>`),
+  tip:"Když stránka místo jména chce „osobní kód“, opište ho ze zprávy od správce (8 znaků) a klepněte na „Zobrazit moje údaje“."},
+ {t:"Jak číst vyúčtování",x:"Nejdůležitější je poslední řádek. <b style='color:var(--red)'>Červeně</b> = máte <b>doplatit</b>. <b style='color:var(--good)'>Zeleně se mínusem</b> = máte <b>přeplatek</b>, peníze vám vrátíme nebo se odečtou ze zálohy.",
+  s:tel(hlava+`<div class="pad"><div class="card"><div class="row"><span>počáteční stav</span><span>30,00</span></div><div class="row"><span>konečný stav</span><span>44,00</span></div><div class="row"><span>vytočeno m³</span><span>14,00</span></div><div class="row"><span>náklady</span><span>1 208,00 Kč</span></div><div class="row"><span>uhrazená záloha</span><span>1 000,00 Kč</span></div><div class="row"><span>záloha na další rok</span><span>1 500,00 Kč</span></div><div class="row tot red hl"><span>CELKEM K ÚHRADĚ</span><span>1 708,00 Kč</span></div></div></div>`)},
+ {t:"Přečtěte svůj vodoměr",x:"Kdykoli si můžete udělat <b>kontrolní odečet</b>. Na vodoměru opište <b>černá čísla</b> (celé m³) a za čárku <b>první dvě červená</b>. Nuly na začátku vynechte.",
+  s:meter,tip:"Příklad: černě 00044 a červeně 503 → zapíšete <b>44,50</b>."},
+ {t:"Zadejte stav a klepněte na Spočítat",x:"Na stránce sjeďte dolů ke <b>Kontrolnímu odečtu</b>. Do políčka napište číslo z vodoměru a klepněte na zelenomodré tlačítko <b>Spočítat</b>.",
+  s:tel(hlava+`<div class="pad"><div class="card"><b>Kontrolní odečet</b><div style="margin:6px 0 2px;font-size:11px;color:#555">Stav vodoměru (m³)</div><div class="inp"><span class="type">46,50</span></div><div class="btnm hl" style="margin-top:8px">Spočítat</div></div></div>`,prst(120,215))},
+ {t:"Uvidíte, kolik vám ze zálohy zbývá",x:"Ukáže se, kolik jste od začátku sezony spotřebovali a kolik vám ještě <b>zbývá ze zálohy</b>. Je to jen <b>orientační</b>, přesné vyúčtování dělá správce podle faktury.",
+  s:tel(hlava+`<div class="pad"><div class="card"><div class="row"><span>vytočeno m³</span><span>2,50</span></div><div class="row"><span>odhad ceny</span><span>216,95 Kč</span></div><div class="row"><span>záloha</span><span>1 500,00 Kč</span></div><div class="row tot green hl"><span>ZBÝVÁ</span><span>1 283,05 Kč</span></div></div></div>`)},
+ {t:"Pošlete odečet správci",x:"Klepněte na zelené tlačítko <b>Poslat odečet správci přes WhatsApp</b>. Otevře se WhatsApp s hotovou zprávou, stačí ji <b>odeslat</b> šipkou.",
+  s:tel(hlava+`<div class="pad"><div class="card"><div class="row tot green"><span>ZBÝVÁ</span><span>1 283,05 Kč</span></div></div><div class="btnm wa hl">Poslat odečet správci přes WhatsApp</div><div class="btnm ghost">Kopírovat text</div></div>`,prst(120,150))},
+ {t:"Uložte si to na plochu telefonu",x:"Nahoře na stránce klepněte na <b>Přidat na plochu</b>. Na telefonu pak budete mít ikonu <b>Voda Údlice</b> a otevřete to jedním klepnutím, jako aplikaci.",
+  s:tel(`<div class="bar" style="display:flex;justify-content:space-between;align-items:center">Voda Údlice<span class="hl" style="background:#fff;color:var(--accent);border-radius:6px;padding:3px 6px;font-size:11px">Přidat na plochu</span></div><div class="pad" style="place-items:center;padding-top:60px"><img src="/icons/voda-192.png" alt="" width="72" height="72" style="border-radius:16px"><div>Voda Údlice</div></div>`,prst(170,8)),
+  tip:"<b>iPhone:</b> v Safari dole tlačítko Sdílet (čtvereček se šipkou) → „Přidat na plochu“. <b>Android:</b> menu ⋮ vpravo nahoře → „Přidat na plochu“. Nechte zaškrtnuté „Zapamatovat kód“, příště se pak nic nezadává."},
+];
+const SPRAVCE=[
+ {t:"Otevřete správu",x:"Na adrese <b>udlicaci.dvere.app/sprava</b> zadejte <b>heslo správce</b> a nechte zaškrtnuté <b>Zapamatovat v tomto zařízení</b>. Pak klepněte na <b>Přidat na plochu</b>, vznikne tmavá ikona <b>Voda správa</b>.",
+  s:tel(`<div class="bar" style="background:var(--accent2)">Voda Údlice – správa</div><div class="pad"><div class="inp" style="text-align:left">••••••••••</div><div>☑ Zapamatovat v tomto zařízení</div><div class="btnm hl" style="background:var(--accent2)">Vstoupit</div></div>`,prst(120,150)),
+  tip:"Data správy se ukládají v tomto zařízení. Pracujte proto vždy na stejném telefonu nebo počítači a občas si stáhněte zálohu (krok 8)."},
+ {t:"Zapište odečet",x:"Záložka <b>Odečty</b>: vyberte vodoměr (hlavní nebo zahrádkáře), datum a stav a klepněte na <b>Uložit odečet</b>. Odečty, které vám lidé pošlou WhatsAppem, zapište sem.",
+  s:tel(`<div class="bar" style="background:var(--accent2)">Odečty</div><div class="pad"><div class="card">Vodoměr: <b>Jan Novák</b></div><div class="inp"><span class="type">46,50</span></div><div class="btnm hl">Uložit odečet</div></div>`,prst(120,150))},
+ {t:"Načtěte výpis z účtu",x:"Záložka <b>Výpis z účtu</b>: nahrajte výpis z Air Bank (soubor <b>CSV</b>). Platby se samy přiřadí k lidem. Zkontrolujte je a klepněte na <b>Zapsat jako ověřené zálohy</b>.",
+  s:tel(`<div class="bar" style="background:var(--accent2)">Výpis z účtu</div><div class="pad"><div class="card"><div class="row"><span>Petr Svoboda</span><span>12× · 1 800 Kč</span></div><div class="row"><span>Eva Dvořáková</span><span>1× · 1 000 Kč</span></div><div class="row"><span>Karel Veselý</span><span>1× · 1 000 Kč</span></div></div><div class="btnm hl">Zapsat jako ověřené zálohy</div></div>`,prst(120,160)),
+  tip:"Dokud výpis není, mají zálohy štítek „předpoklad“. Ten zmizí po zapsání výpisu."},
+ {t:"Řádné vyúčtování",x:"Po faktuře od SčVK v <b>Nastavení období</b> vyplňte <b>fakturu</b>, <b>konečné stavy</b> a <b>účet pro platby</b> a klepněte na <b>Uložit období</b>. V záložce <b>Vyúčtování</b> je pak vše spočítané.",
+  s:tel(`<div class="bar" style="background:var(--accent2)">Nastavení období</div><div class="pad"><div class="card"><div class="row"><span>Faktura SčVK</span><span>7 000 Kč</span></div><div class="row"><span>Konečné stavy</span><span>✓</span></div><div class="row"><span>Účet pro platby</span><span>…</span></div></div><div class="btnm hl">Uložit období</div></div>`,prst(120,160))},
+ {t:"Pošlete vyúčtování v PDF",x:"Záložka <b>Vyúčtování</b>: u každého klepněte na <b>PDF do WhatsAppu</b> a pak znovu na <b>Odeslat PDF do WhatsAppu</b>. Vyberte WhatsApp a člověka a odešlete.",
+  s:tel(`<div class="bar" style="background:var(--accent2)">Vyúčtování</div><div class="pad"><div class="card"><b>Jan Novák</b><div class="row tot red"><span>CELKEM</span><span>1 708,00 Kč</span></div></div><div class="btnm hl">PDF do WhatsAppu</div><div class="btnm ghost">Jen text</div></div>`,prst(120,140))},
+ {t:"Pošlete zprávu všem",x:"Záložka <b>Zprávy</b>: vyberte šablonu (třeba <b>Osobní odkaz</b> nebo <b>Výzva k odečtu</b>), klepněte na <b>Vybrat všechny</b> a u každého na <b>WhatsApp</b>.",
+  s:tel(`<div class="bar" style="background:var(--accent2)">Zprávy</div><div class="pad"><div class="btnm ghost">Šablona: osobní odkaz</div><div class="card"><div class="row"><span>☑ Petr Svoboda</span><span class="btnm wa hl" style="padding:3px 8px">WhatsApp</span></div><div class="row"><span>☑ Karel Veselý</span><span class="btnm wa" style="padding:3px 8px">WhatsApp</span></div></div></div>`,prst(170,100))},
+ {t:"Doklady od SčVK",x:"V <b>Nastavení období</b> dole jsou <b>Doklady od dodavatele</b>. Faktura za 2026 je tam připravená, novou fakturu nebo fotku tam můžete nahrát.",
+  s:tel(`<div class="bar" style="background:var(--accent2)">Doklady</div><div class="pad"><div class="card">Faktura SčVK 2026<div class="btnm hl" style="margin-top:6px">Otevřít</div></div></div>`,prst(120,110))},
+ {t:"Zálohujte data",x:"Jednou za čas a vždy po větší změně: <b>Nastavení období → Záloha dat → Stáhnout zálohu</b>. Soubor si uložte (třeba poslat e-mailem sám sobě).",
+  s:tel(`<div class="bar" style="background:var(--accent2)">Záloha dat</div><div class="pad"><div class="btnm hl">Stáhnout zálohu</div><div class="btnm ghost">Nahrát zálohu</div></div>`,prst(120,60)),
+  tip:"Návrhy na zlepšení posílejte Zdeňkovi Kučerovi: kucerazd@outlook.cz"},
+];
+let SADA=ZAHRADKAR,I=0;
+function vykresli(){const k=SADA[I];
+  $("krok").innerHTML=`<div class="step"><div class="title"><span class="num">${I+1}</span><h2>${k.t}</h2></div><p class="text">${k.x}</p>${k.s}${k.tip?`<div class="tip">${k.tip}</div>`:""}</div>`;
+  $("dots").innerHTML=SADA.map((_,i)=>`<i class="${i===I?"on":""}"></i>`).join("");
+  $("zpet").disabled=I===0;$("dal").textContent=I===SADA.length-1?"Hotovo ✓":"Další ›";
+  try{history.replaceState(null,"",`#${SADA===SPRAVCE?"s":"z"}${I+1}`)}catch{}window.scrollTo({top:0,behavior:"smooth"})}
+function $(id){return document.getElementById(id)}
+$("zpet").onclick=()=>{if(I>0){I--;vykresli()}};
+$("dal").onclick=()=>{if(I<SADA.length-1){I++;vykresli()}else{location.href=SADA===SPRAVCE?"/sprava/":"/"}};
+function sada(s){SADA=s;I=0;$("b-z").setAttribute("aria-pressed",s===ZAHRADKAR);$("b-s").setAttribute("aria-pressed",s===SPRAVCE);vykresli()}
+$("b-z").onclick=()=>sada(ZAHRADKAR);$("b-s").onclick=()=>sada(SPRAVCE);
+addEventListener("keydown",e=>{if(e.key==="ArrowRight")$("dal").click();if(e.key==="ArrowLeft")$("zpet").click()});
+let sx=null;addEventListener("touchstart",e=>sx=e.touches[0].clientX,{passive:true});addEventListener("touchend",e=>{if(sx==null)return;const d=e.changedTouches[0].clientX-sx;if(Math.abs(d)>70)(d<0?$("dal"):$("zpet")).click();sx=null});
+{const h=location.hash.match(/^#([zs])(\d+)$/);if(h){SADA=h[1]==="s"?SPRAVCE:ZAHRADKAR;I=Math.min(+h[2]-1,SADA.length-1);$("b-z").setAttribute("aria-pressed",SADA===ZAHRADKAR);$("b-s").setAttribute("aria-pressed",SADA===SPRAVCE)}}
+vykresli();
+</script>
+</body>
+</html>
