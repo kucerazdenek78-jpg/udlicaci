@@ -5,6 +5,13 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex, nofollow">
 <title>Voda Údlice</title>
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#0f6a7a">
+<link rel="icon" href="/icons/voda-192.png">
+<link rel="apple-touch-icon" href="/icons/voda-apple-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Voda Údlice">
 <style>
 :root{--bg:#f3f6f6;--surface:#fff;--fg:#14232a;--muted:#5b6d73;--line:#d5dfe1;--accent:#0f6a7a;--accent-ink:#fff;--good:#1d7a46;--bad:#b03a2e;--soft:#e6eff0;
   --sans:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;--mono:ui-monospace,Menlo,Consolas,monospace}
@@ -38,7 +45,8 @@ dt{color:var(--muted)} dd{margin:0;text-align:right;font-family:var(--mono);font
 </head>
 <body>
 <div class="wrap">
-  <header><div><h1>Voda Údlice</h1><div class="sub">Vyúčtování vody pro zahrádkáře · parc. 1116/1-50</div><div class="sub">Správce: Rostislav Černý, tel. <a href="tel:+420775424865">775 424 865</a></div></div></header>
+  <header><div><h1>Voda Údlice</h1><div class="sub">Vyúčtování vody pro zahrádkáře · parc. 1116/1-50</div><div class="sub">Správce: Rostislav Černý, tel. <a href="tel:+420775424865">775 424 865</a></div></div><button class="btn ghost small" id="pwa-btn" type="button" hidden>Přidat na plochu</button></header>
+  <div id="pwa-help" class="msg" hidden></div>
 
   <form class="panel" id="f-kod">
     <h2>Váš osobní kód</h2>
@@ -47,11 +55,12 @@ dt{color:var(--muted)} dd{margin:0;text-align:right;font-family:var(--mono);font
       <label>Osobní kód<input id="kod" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="např. ab3k7m9p"></label>
       <button class="btn" type="submit" id="b-kod">Zobrazit moje údaje</button>
     </div>
+    <label style="display:flex;gap:8px;align-items:center;font-size:.9rem;color:var(--fg)"><input type="checkbox" id="pamatuj" checked style="width:auto"> Zapamatovat kód v tomto zařízení</label>
     <div id="kod-msg" class="msg err" hidden></div>
   </form>
 
   <div id="ja" hidden style="display:grid;gap:16px">
-    <div class="row" style="justify-content:space-between"><h2 id="jmeno"></h2><button class="btn ghost small" id="zamknout" type="button">Zavřít</button></div>
+    <div class="row" style="justify-content:space-between"><h2 id="jmeno"></h2><button class="btn ghost small" id="zamknout" type="button">Odhlásit</button></div>
     <div class="panel" id="minule" hidden></div>
     <div class="panel" id="kontrola-panel">
       <h2>Kontrolní odečet a předběžný výpočet</h2>
@@ -69,7 +78,7 @@ dt{color:var(--muted)} dd{margin:0;text-align:right;font-family:var(--mono);font
 </div>
 <script>
 const V={"iter": 150000};
-const Z=[["478bVPCAQOMVrnVmjuhsYQ==", "/D88Pk4pwXX5pd6A", "sD8J6uKu8QgIhQw5ppdaR16oGliNwB2lUE2ya6BH96MjAyUUw+HsWJahFEsXNvVDH17M/5O6r1qhSqMou9LQ+MuTVshOJiFX/0NjAoMEtoWnXH/dUi/KYuu3prGbObrR4GGnGpK9iONWRypSR7ybk7dmGiOKylaqKRsxBX8YFHek36fmevS/uHTAHmbessYFs9iqaPsXSTaWhku+rcdOZwtPm+u7R+9LNo4SiG81Yz2EggK6CZQIV49LYFdGE6X2uv4NUz27oWU3Q3LDwQ9XHfoIx4x1HCIjZf+4Lp8ppXqtxROxJXBwmaLQlGuFLxh/zcLmJGW7P78qU/WNwUoAtenrwfa2gQHAN22gTNL9trXeLKhxjw8FWwXxJwKHh+0Q93yzTJYiKvAbzZeHz4pWfsoNAeK2/dzsPFXAygPWpLxlkUszzRlhHuk="], ["4BAQYBzvTe3FmYb+zmeopg==", "DCY1BJURkG3mJhsW", "0IZwdxY71tG9528ry6LUPIXVQzJqDQGHzjNHLZZsoQvJGlyavnB7BB+5lfKifD6NTrWfzqMCYfpvl0ziaJZHTyR067FcCjSME97lDYn4/6zRrQ7Zbt5SDwqJ0YmM0EOmBxPjoy1whNOMIlJ9jz1pBaLeKSakY/F22TnW/AdyjBEc9uWTF2wmXdb9YDg7lHXXzkFXsXFfF/MTF34JrxBEFIFlRj9x8lpO7y7wey2dUUq539T8CMU9r8y2bikO6vw+trfD5eb1RLvSqbudDmxqs89wC7rZM+j6AGRSGc9pXarVYBp4tzuhOjqp4DDMKOB0u6OtxNvBY0NrNDqLQVlWHGttrqGkXizw3JzqkLFp6w/sxQGZIV5K12R5obe0Gm/N63F7Ra31VU1m5ozq4G/owLS+fwlw+keKsuh4TlLT2bxXz5Y6fWhStfepw56d"], ["gzZlVXaH7A1UiRmyXIBXgQ==", "6QfOduwVuF3m4NLy", "KRAX55XQrJWBVVPkfWldVrYVyLzfld2L/Oe4QwgHBd36tW9nYXmiU/xo4KOg548GRXEmv3znwAJCZqGB/RAz9LGtsV6dFAs6RhgyoGD52ZUAqK4q5LUqNn5ShcIDrtRH8fBQDinBKtmCsByKCQw6odYL7BlKem9Zf2BQSBt7AAzovLKAHZC4jzMXqVkIdPwd537tY7yj7dEihoofROjG0K4Yx09Xp4b6Gj8pVYdVpfLMpkeuIHOvfT4zBwPvLiDP/KlsY7F+GKWZiKbyFjnsx7gqUG5VGtQIudlxB6zXe/8S7Yw3EUKgC/XGPaAAlSP+SsUNZZH5dsx9MR473u31ffEwQ+6RKtBZLrsSc+j/HqA+H6/1fiHEfzZvXb421EI/Zmp1DIsTavycFVX9IDoTUfAvntMazYe7wqmYYC26ro6UqZwRLWGFpQ=="], ["w44957Ny4EiusO2k0eKajg==", "yXoyt+3cPA9XZVQv", "DZVIs4AIflAv+iAESDP88H7sjI8o62VxtfXiHc53jrbUwEKuBRZwG/qq87/IgBuDujGIpIj7lBAmPyBSMPAlJzTUQQQBJzlk4OF2lKrJvxtaUU5x3QTgODy4T1fyBcIfoDOg2DWZY13lwMpr1vq6m4lHt+FRGxwdaIvBYS93xujS/K7kyMjBVA6HNZHARx4OArDhO18qUeA9vb05v/z+lMew3WK9EHI4Sm7zlU4RAauKDlx/ZnZJUvXeFlG3Xg9ZmTWRmiq3U1LIs+PoU35Dtlfa0BZEXqgB9+xghpdVFJ93WDDFwg2o+E0AVZc/ThbtPsFMuELgxVapfTvDbFbxUAy/M57HfOeq9Vmy2K/uP0KJtXk6yezkbi0t1t3GAb65SOi3llT0i7kMJUcAqOMfzukqQKmN7cZv55YxPfzC21H8J8sFTw=="], ["CnKx3be/8NX8wxqESHOI/A==", "cTEjmfnY1My97D6U", "jrY3CPLRd6pTIxp9axrxD0B3un3cg7l3fN7Fdq6F6vRqa2TVBZdYRcltVJ7xTLFkblz9+6F94kBohFD7SZs4RzScwY4Ho6qlWxqw/9xJTfeFgNL3ykj/MUMrjQjKYUh3XyCMDC5ulVYuN4dknslOlKJPkxbKucJqcg8DAFUfZrUCvt/WXFWkGQbhaO1TuRVv9hxgyc5y+kChAoVD0O+8ANtt/z6vDEa/zFO2i8j3TOOKyEyYEdCUhCt86kUUW7uIK1hNXKLJ0/BmG5nnhh3Gl6QkFHx8ikVK1xq1p08lj0Gojd+X5wx44TRDM7+ilKG6ZwGy+ZS3uiPviM8fl2ggrST6m8JOoRQhWfdMTjeg97eNUkf1gYdi8+K8Z/mMCyBXvyNmpr7NHWCxX+TKQJ5AXPBUhzMxO5S1XRrtTGDMZPjSv+V3eyF9"], ["ZtH2w4q26hcsk7kfDuwbuw==", "wZ3IigB0iQGXIy6U", "oD9zUGVL+O1KGZrLdTxKiZPkkNpckYdUwHhnJzDW3MbjplXbiyqLjwHHNEP4fjbNDer/kqfYEvGT1ZecLIHsiIJwHPahUv2P2n4THWh3YydDiQd2F9jkqr9X3EPVgpQVEpmJem22NZIow8320i/Au5bXBeNRrRUpcoIDhFQiFXZGG4pDnAVobPBg6toACrWQq5tFMPFQ86+skay3U4f7CbTHqDfzLI+MenYQIoLyEbBKblk+uMDi682aJ2aayJoAXXlt8c6JuXdTqDcHLBGpQwAcV/V3VV1cHPHZIZCYZjkjW1C2WKajL+pSmluaDzJV/P110UmDwEygIvtUjcLJW13kRbodVhTyCmtyV+7JzqNoG6TEGl0gcwX5u0lzK/xyHbpLcVkZ8F9vckir1pk9QWlV3uEPARcSgv9/2QT4tH89/xGJIvLxTzC+Q9CgNw=="], ["E5t9DNWbndrYExX3KvTgIg==", "n+SRi7JVkqHV6ToT", "YqG/ECwVTXLzdFdHpGOLPFfOuIQ6J9WWh/3Rh/DAq4yiyLUUflzPQqYEobGr6/tad+zXolGGPlycyTHPH3Bf22K3xJMe81CW7d1VtKAtum02tRP2MPA02CMsJG7IZPjsdvUrAMSX6sPPyWz6HXXZUPuUm6su07XHvMEW+xMV38KC9TwADX9ux+TcOaSxhCCmtAhwl82nLWY9CKOki4yjZybKGH4xeX7hBgEDPVUifQe0Uq2jlet3f3LGsdEXnwT2JR3a0fhhIfs1FOrTMQkRnKRKsp9oL/We5zzK8Xwwaws/bs+xd2bVMmDAtrDNvCU8cQVNc78BHIzlHB3QbceVCnIRAQ5zTZcS7dv4WFtNoYmgaTbnkvyKNAUwOg7l2GH6h/g3PLOP4GPyFYdMAVpyjNmoqBuVWmo/fDit1UCQDpzL3h0M4sbxEA=="]];
+const Z=[["vnSybsoV5pIFvK2+QiPw0g==", "taPtUT16tC5VvPRD", "/RuZ2tdnTJQuGQkxi9z/mRCYJ1C9KxZJRVlGYA39I17J8EAe2YP6kYQw6Y0MV1Cbguw18R3T7Nh355dk3iSo6BdtUIFYWLuGhGKzbcduelU2dFDQUJaoSPjQ8tQ1yZmsHBgNeFcU7zTNS6Dhwkp07w7jCdHPCKgK2Dzvf5Avrn8mDumlpYk1He93cicP6p4YA9iLY0L4yRzwBwg/VU3VRDTvmWn1oOcLegA9y4e0AeOo48292xSupXWa9cGmCLErilEV3eZsJKT+Gs3KjgC1QFJQ221tX2qskKK1R3hP4YxmT734jargs9LTvghBl8Em10nOGm7WmcejL1CGHMI4ef22pOib+Xj0v7e+z6tZsmdKTvAJPc8R/klQQJ7gvT3IL8KOOVbIVKb7xk/nCDuzS0vyhR0DqMbk7mFEivCD+JgduvrREM+hYYQL+p8HUA=="], ["pUA0BsWo6g05NvOnkCr8Sg==", "lGeDm+xIPn2AK+dR", "dY8VCE6dr2lyhRht5GbCxtBSLlQ8O2Z9oYsmS7jBpntaqsuH3u/O1moDxdmKjfzdV6jfzJIVLpuVUXxHwcFCv/exvILKA/hJ3v8L3upC+tDVkiKht7nN0xN+2YfZhwSwy7484aK4qcLYSJ/AD8wSzAlLelqE4M99aAuAfGDfaNNzj/g6wc71rnRik1NH7pHrwBZ9wn34P3Z9TaJpgNXzFWlKLV6vBhdUefdmcdCQoaaP3d5BbAdR/yxAw7wcV7+i0mYCY1F4q+j4nt/SWOASsK+JUTH0rtIZLYVUL+you8TJkynXubxPYGpMGZainuLN2LxERJPAu8+QNKzeUL8TF9glLHpVPiIP3ctxdmldpmF0O+u0+Mgg8CdJl+XV32X6S2VSxVf3VkDs3CrVlQ4iTAU45Rb5+NQJkwKMfu/6vv7PBYaST7sjrw=="], ["nSe/u64bY3Anb/EScTYrAw==", "ilh8grrQQFmu+LPi", "cusbdz8ypeM/YVd3fpfZNe/S++1qOAVI6xGt1DNT/9hT70htc81GSU53+m44p9i6tok/AbCPx3mYolgSkh+MeZL9P2MgWzEoCO9mnC3/Q2AHjhRPpnq1Dh+BXNs2mwYHubjcp8/cUPof9fF6wxzL4sGl93n6/8g9HD9RiozCWU2Ltaz5GEtIH6/wwMqkjSsP7IWbtLdu+ko+grR0ASvYbMMCSRFkQgl7tymVrAI5sDrdnT5ynb9+FiICa+CsE51qIc+Eo3na+55VCjG60iLCSKu1oNtt3QeCbx9FrKqddkXXPgMT3ih7wOl3WOUFkg/2gsedSI7waeCjCK1VkZDEinU8NB/kimaF9xD/yD4cGEXrgwnfkZYC22uo2E4B4OTQlAk1UraWOJ3hspSBKiRvVuaqYtlqygiRADqxe/q1ztwE4dzYL2LlWi7W6oIr"], ["6oHyXgExHM7dcjRpVUXkWQ==", "RORKnZe6NjVoiBJ2", "UNmunsS395MrOl8IP5DGvyBAmzccqYRbthZImogwG75VBKARAHarg3QiQW379Vo47QvwoEpSMl3sjVZrgNZs32AZbAdledBavo8w1SQ0W6xzzym/WA5Nvd5D0M+gCvR5ARfT1F3zPb+KXg/tDCVZib70/PRMEPweREyJicZmMhH1tCQ3bg++eNg6JjP0qf5mO84XkYmtDA2lKi6UYrvrWOFK5ecfzPIgNvjeY0CAmTJK3uFjMCqmWsUxlvNo1cchzg6lsBeAPhR7PbP1Z35tgJc76HPZl0habYOVU2PfIQ+o+I5OKFL6yUT8quBTLOpVsc+iQw3KMbgtTTyR1TCZpDd2PgKDnEXnp2pvPd1X/9oKCaXp4tixYMz1sVLnFuR4hgdM3+Ke/JfAWjp1soDYygGQoa1zEElnmMsJMVv7Uc0ORbnv4sDibR0="], ["63Of4Nrk1HYegYasts4NeA==", "ee/MHXMzOGdMAWD0", "u40/vN1IZ9GwNNSPISW77hIOq4m81INyKba+zQ2kr+eYP7xTOmBy6ZwZXb+nTjzkwO7EGYMBVDQ99NJrBEkqGxL1RH9VaxRR09HvHJtvJ3Osz8UsZLxueX8XODu4AERyCMqvSHQWfixmGUUO9/I3iASCVGtvCJnCj3a+t3hts4fTNh2LO7yzIpXRCZwFcofLtzr9GZ2pFleecchnq2Kg15KWvU1njFCANMuymcfUrx+GYMPWnPcnAsgtWLR1sNav5JX7iYMH25GctC8EA7cIVSotuqMJH/XgkMZWMQE+VOrDh6dgRljW9K8pmBRF2mtPT3/9T+TRBCFDpWN8+XUexpiQWsbz20Z5qFDCB/cozn5gnajZv25YS50G1o1IBfKyNRKlPVcUGlD6KV7FTHTv6m8krKOHCfDnEvAEKmU2ENH/u1gLw8j3bQ=="], ["3KFy86/zKNeNnd2fnyc88Q==", "M5ZgXOMz7wXEw2jc", "rbaC83PUNM9lX94E+nqYLBsYLAyLAK4aOoQMOY07819iJouRocBLM0YUluxJ5kr/PQ2aJdweLjMIT+aYYpvsf/WwX5+Hk/9V26L5OYI6ZbqT88vugXQAdQs1CUvHfeKJSZRKmaxrU4P7hnt9KeQ8EJqKiAo0TtvTUE+cohQ0S2EuXmnI03/eWWKBRKqbogCbEYzY4n5iSsaPsIzUh4mihSTDYBNB98R4iq1vDhWWEX14YlivFQTCHuezPD7QA7uILz+z/r6YbNaLrkVnJpdcYUciRU6Nevdz56VOETVJvAozM/MyDsmk2MBfnBw8kipvsU+FLWlwZZzADgR9YEr+y610F/j5wYmSd8uSpbovI3ZmSw18vvUc9CrvrIcGo9OLNIT1UBeykE8rkHZiMux4J2jFRNGrqSsSXZvtQlDVkvr7VoN9/+xc"], ["CrULfNMbYs//ajnHtGIgog==", "6Vi48gR/LU6MTTRh", "2dT40c9abUHV4TQFi1nFu0uolWpig/yt+wRXllWwW+y6jgJrZ6Avai1lCOVJb8X88jTMMze1XeEt7ehptA42ExhoLqKGZ7gnjfE3QpGwymh0+k1m1tSLFnJlp8sXHy8U8zNnEYGuPjgBMtM/iKXfX7F/Z4mCNIE667Xlw57GQs70GCwvlHmR4adkv2GbOfC1zWansh9ZxHtRTOtn07CAhL206YT2EfmTECe6u5/mX/GBr+mOlFK4AT+7seFCihXpD6/oi1UXepmtSdzm9E//Ov5GgTHa/ssChZ/UG1yhB71JswvAKEQlEtug7ygUlX+Ptpobp3cEXsapkQu8OoiARO3NZe5BeBSKbtff9f/P51ZbokqdWOP/qT7en2QtxgkrS6n5roG1LYHqnvhl8xVLMP9+JJ71B3OKPoExDpSQsToAY7CwFA=="]];
 const $=id=>document.getElementById(id);
 const kc=x=>x==null||isNaN(x)?"–":x.toLocaleString("cs-CZ",{minimumFractionDigits:2,maximumFractionDigits:2});
 const r2=x=>Math.round((x+Number.EPSILON)*100)/100;
@@ -103,8 +112,8 @@ function ukaz(d){
 }
 $("f-kod").onsubmit=async e=>{e.preventDefault();const b=$("b-kod");b.disabled=true;b.textContent="Ověřuji…";$("kod-msg").hidden=true;
   const d=await odemkni($("kod").value);b.disabled=false;b.textContent="Zobrazit moje údaje";
-  if(d)ukaz(d);else{$("kod-msg").hidden=false;$("kod-msg").textContent="Kód nesedí. Zkontrolujte ho, nebo se ozvěte správci (Rostislav Černý, 775 424 865)."}};
-$("zamknout").onclick=()=>{JA=null;$("ja").hidden=true;$("f-kod").hidden=false;$("kod").value="";$("vysledek").innerHTML="";try{history.replaceState(null,"",location.pathname)}catch{}};
+  if(d){try{$("pamatuj").checked?localStorage.setItem("vu-kod",$("kod").value.trim().toLowerCase()):localStorage.removeItem("vu-kod")}catch{}ukaz(d)}else{$("kod-msg").hidden=false;$("kod-msg").textContent="Kód nesedí. Zkontrolujte ho, nebo se ozvěte správci (Rostislav Černý, 775 424 865)."}};
+$("zamknout").onclick=()=>{try{localStorage.removeItem("vu-kod")}catch{};JA=null;$("ja").hidden=true;$("f-kod").hidden=false;$("kod").value="";$("vysledek").innerHTML="";try{history.replaceState(null,"",location.pathname)}catch{}};
 $("f-odecet").onsubmit=e=>{e.preventDefault();const m=$("o-msg");m.hidden=true;const stav=num($("stav").value),datum=$("datum").value;
   if(stav==null||!datum){m.hidden=false;m.textContent="Zadejte datum a stav vodoměru (např. 47,27).";return}
   if(JA.start==null){m.hidden=false;m.textContent="Chybí počáteční stav sezony. Ozvěte se správci (Rostislav Černý, 775 424 865).";return}
@@ -116,7 +125,24 @@ $("f-odecet").onsubmit=e=>{e.preventDefault();const m=$("o-msg");m.hidden=true;c
   $("vysledek").innerHTML=`<dl>${lines.map(([a,b])=>`<dt>${esc(a)}</dt><dd>${esc(b)}</dd>`).join("")}<dt class="tot">${tot[0]}</dt><dd class="tot ${zbyva<0?"pos":"neg"}">${tot[1]}</dd></dl><div class="msg">Toto není řádné vyúčtování, jen orientační výpočet.</div><div class="row" style="gap:8px"><a class="btn small" target="_blank" rel="noopener" href="https://wa.me/420775424865?text=${encodeURIComponent(txt)}">Poslat odečet správci přes WhatsApp</a><button class="btn ghost small" type="button" id="kop">Kopírovat text</button></div>`;
   $("kop").onclick=async()=>{try{await navigator.clipboard.writeText(txt);$("kop").textContent="Zkopírováno"}catch{$("kop").textContent="Kopírování nejde"}};
 };
-(async()=>{const h=location.hash||"";if(h.startsWith("#k-")){$("kod").value=h.slice(3);$("f-kod").requestSubmit()}})();
+(async()=>{const h=location.hash||"";let k=h.startsWith("#k-")?h.slice(3):null;if(!k){try{k=localStorage.getItem("vu-kod")}catch{}}if(k){$("kod").value=k;$("f-kod").requestSubmit()}})();
+/* --- instalace jako aplikace --- */
+let BIP=window.__bip||null;
+const STANDALONE=matchMedia("(display-mode: standalone)").matches||navigator.standalone===true;
+addEventListener("beforeinstallprompt",e=>{e.preventDefault();BIP=e});
+if(!STANDALONE&&$("pwa-btn"))$("pwa-btn").hidden=false;
+if($("pwa-btn"))$("pwa-btn").onclick=async()=>{
+  if(BIP){BIP.prompt();try{await BIP.userChoice}catch{}BIP=null;return}
+  const ua=navigator.userAgent;let t;
+  if(/iPhone|iPad|iPod/.test(ua))t="iPhone / iPad: v Safari dole klepněte na tlačítko Sdílet (čtverec se šipkou nahoru) a zvolte „Přidat na plochu“.";
+  else if(/Android/.test(ua))t="Android: v Chromu otevřete menu ⋮ (vpravo nahoře) a zvolte „Přidat na plochu“ nebo „Instalovat aplikaci“.";
+  else if(/Edg\//.test(ua))t="Edge: v menu … zvolte Aplikace → „Nainstalovat tento web jako aplikaci“.";
+  else if(/Chrome\//.test(ua))t="Chrome: klikněte na ikonu instalace vpravo v adresním řádku, nebo v menu ⋮ zvolte „Přenést, uložit a sdílet“ → „Instalovat stránku jako aplikaci“.";
+  else if(/Safari\//.test(ua))t="Safari na Macu: v menu Soubor zvolte „Přidat do Docku“.";
+  else t="V menu prohlížeče hledejte „Instalovat aplikaci“ nebo „Přidat na plochu“.";
+  const h=$("pwa-help");h.hidden=false;h.textContent=t};
+if("serviceWorker" in navigator)navigator.serviceWorker.register("/sw.js").catch(()=>{});
+
 </script>
 </body>
 </html>

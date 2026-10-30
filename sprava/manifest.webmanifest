@@ -1,0 +1,29 @@
+{
+ "name": "Voda Údlice – správa",
+ "short_name": "Voda správa",
+ "id": "/sprava/",
+ "start_url": "/sprava/",
+ "scope": "/sprava/",
+ "display": "standalone",
+ "lang": "cs",
+ "background_color": "#f3f6f6",
+ "theme_color": "#0b263c",
+ "icons": [
+  {
+   "src": "/icons/sprava-192.png",
+   "sizes": "192x192",
+   "type": "image/png"
+  },
+  {
+   "src": "/icons/sprava-512.png",
+   "sizes": "512x512",
+   "type": "image/png"
+  },
+  {
+   "src": "/icons/sprava-maskable-512.png",
+   "sizes": "512x512",
+   "type": "image/png",
+   "purpose": "maskable"
+  }
+ ]
+}
